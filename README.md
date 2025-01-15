@@ -21,3 +21,24 @@ cp .env.example .env
 
 ## Run server
 fastapi dev app/main.py
+
+## Run alembic migration
+alembic upgrade head
+
+## Generate alembic migration from models
+alembic revision --autogenerate -m "initial migrations"
+
+## Build docker container
+docker build -t fastapi-template .
+
+## Run docker container
+docker run -d --name fastapicontainer -p 80:80 fastapi-template
+
+## Build using docker compose
+sudo docker-compose build
+
+## Run docker compose
+sudo docker-compose up -d
+
+## Stop docker compose
+sudo docker-compose down
