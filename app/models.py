@@ -1,10 +1,11 @@
-from sqlmodel import Field, SQLModel, String, Enum, Relationship
-from typing import List, Optional
-from datetime import datetime
+from sqlalchemy import Column, Integer, String
 
+from app.core.db import Base
 
-class Hero(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(index=True)
-    age: int | None = Field(default=None, index=True)
-    secret_name: str
+class Hero(Base):
+    __tablename__ = "hero"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), index=True)
+    age = Column(Integer, nullable=True)
+    secret_name = Column(String(255))

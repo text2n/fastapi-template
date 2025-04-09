@@ -1,6 +1,6 @@
 from fastapi import Depends, Header, HTTPException
-from sqlmodel import Session
-from app.core.db import engine
+from sqlalchemy.orm import Session
+from app.core.db import SessionLocal
 from typing import Annotated
 
 async def get_token_header(x_token: str = Header()):
@@ -14,8 +14,11 @@ async def get_query_token(token: str):
 
 # Database dependency
 def get_session():
-    with Session(engine) as session:
-        yield session
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 SessionDep = Annotated[Session, Depends(get_session)]
 

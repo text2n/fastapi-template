@@ -1,19 +1,19 @@
 from typing import Annotated
 from fastapi import APIRouter
-from app.models import Hero
 from fastapi import HTTPException, Query
-from sqlmodel import  select
 from app.dependencies import SessionDep
+from app import models, schemas
 
 router = APIRouter()
 
 
 @router.post("/heroes/")
-def create_hero(hero: Hero, session: SessionDep) -> Hero:
-    session.add(hero)
+def create_hero(hero: schemas.Hero, session: SessionDep) -> schemas.Hero:
+    new_hero = models.Hero(**hero.model_dump())
+    session.add(new_hero)
     session.commit()
-    session.refresh(hero)
-    return hero
+    session.refresh(new_hero)
+    return new_hero
 
 
 @router.get("/heroes/")
@@ -21,14 +21,15 @@ def read_heroes(
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
-) -> list[Hero]:
-    heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
-    return heroes
+) -> list[schemas.Hero]:
+    return session.query(models.Hero).offset(offset).limit(limit).all()
+
 
 
 @router.get("/heroes/{hero_id}")
-def read_hero(hero_id: int, session: SessionDep) -> Hero:
-    hero = session.get(Hero, hero_id)
+def read_hero(hero_id: int, session: SessionDep) -> schemas.Hero:
+    hero = session.query(models.Hero).filter(models.Hero.id == hero_id).first()
+
     if not hero:
         raise HTTPException(status_code=404, detail="Hero not found")
     return hero
@@ -36,7 +37,7 @@ def read_hero(hero_id: int, session: SessionDep) -> Hero:
 
 @router.delete("/heroes/{hero_id}")
 def delete_hero(hero_id: int, session: SessionDep):
-    hero = session.get(Hero, hero_id)
+    hero = session.query(models.Hero).filter(models.Hero.id == hero_id).first()
     if not hero:
         raise HTTPException(status_code=404, detail="Hero not found")
     session.delete(hero)
